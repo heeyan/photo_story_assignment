@@ -3,7 +3,6 @@ package com.assignment.photostory.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.assignment.photostory.helper.PhotoHelper;
 import com.assignment.photostory.helper.RealmHelper;
 import com.assignment.photostory.realm.object.PhotoObject;
 import com.assignment.photostory.realm.object.StoryObject;
@@ -29,6 +28,7 @@ public class Story implements Parcelable{
     public String body;
     public List<Photo> photos;
 
+    //for new story
     public Story() {
         id = -1;
         updatedAt = Calendar.getInstance().getTime();
@@ -37,6 +37,7 @@ public class Story implements Parcelable{
         photos = new ArrayList<>();
     }
 
+    //for exist story
     public Story(long id) {
         this.id = id;
         StoryObject storyObject = RealmHelper.getRealm().where(StoryObject.class).equalTo("id", id).findFirst();
@@ -53,11 +54,15 @@ public class Story implements Parcelable{
         return id;
     }
 
+
+    //================================================================================
+    // action logic for story
+    //================================================================================
     public void addPhoto(File photo){
-        photos.add(new Photo(photo, PhotoHelper.saveThumbnail(photo, photo.getName()+"_thumb")));
+        photos.add(new Photo(photo));
     }
 
-    public void writeStory(){
+    public void save(){
         if(id>0){return;}
 
         RealmHelper.transaction(new Realm.Transaction() {
@@ -76,13 +81,13 @@ public class Story implements Parcelable{
                 storyObject.title = title;
                 storyObject.body = body;
                 for (Photo photo : photos) {
-                    storyObject.photos.add(new PhotoObject(photo.origin.toString(), photo.thumb.toString()));
+                    storyObject.photos.add(new PhotoObject(photo));
                 }
             }
         });
     }
 
-    public void editStory(){
+    public void edit(){
         if(id<=0){return;}
 
         RealmHelper.transaction(new Realm.Transaction() {
@@ -96,7 +101,7 @@ public class Story implements Parcelable{
         });
     }
 
-    public void removeStory(){
+    public void remove(){
         if(id<=0){return;}
 
         RealmHelper.transaction(new Realm.Transaction() {
@@ -108,18 +113,14 @@ public class Story implements Parcelable{
         });
     }
 
-    public void cancelStory(){
+    public void cancel(){
         if(id>0){return;}
 
         for(Photo photo : photos){
-            photo.origin.delete();
-            photo.thumb.delete();
+            photo.removePhoto();
         }
 
     }
-
-
-
 
     //================================================================================
     // parcelable implement

@@ -4,7 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ThumbnailUtils;
-import android.os.Environment;
+
+import com.assignment.photostory.PhotoStoryApplication;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,10 +15,9 @@ import java.io.FileOutputStream;
  */
 
 public class PhotoHelper {
-    private static final String DIRECTORY = "!photostory";
+    private static final String DIRECTORY = ".photostory";
     public static File savePhotoToFile(byte[] data, String fileName) {
-        File file = makePhotoFile(fileName);
-
+        File file = new File(PhotoStoryApplication.instance.getFilesDir(), fileName + ".jpeg");
         try {
             FileOutputStream out = new FileOutputStream(file);
             rotateImage(BitmapFactory.decodeByteArray(data, 0 , data.length), 90)
@@ -27,13 +27,11 @@ public class PhotoHelper {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return file;
     }
 
     public static File saveThumbnail(File originalFile, String fileName) {
-        File file = makePhotoFile(fileName);
-
+        File file = new File(PhotoStoryApplication.instance.getFilesDir(), fileName + ".jpeg");
         try {
             FileOutputStream out = new FileOutputStream(file);
             ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(originalFile.toString()), 256, 256)
@@ -42,22 +40,6 @@ public class PhotoHelper {
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        return file;
-    }
-
-    public static File makePhotoFile(String fileName){
-        File direct = new File(Environment.getExternalStorageDirectory() + "/" + DIRECTORY);
-
-        if (!direct.exists()) {
-            File directory = new File("/sdcard/"+ DIRECTORY +"/");
-            directory.mkdirs();
-        }
-
-        File file = new File(new File("/sdcard/"+ DIRECTORY +"/"), fileName + ".jpeg");
-        if (file.exists()) {
-            file.delete();
         }
 
         return file;

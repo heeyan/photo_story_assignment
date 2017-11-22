@@ -10,11 +10,14 @@ import com.assignment.photostory.helper.RealmHelper;
 
 public class PhotoStoryApplication extends Application {
 
+    public static PhotoStoryApplication instance;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        instance = this;
 
         RealmHelper.init(this);
     }

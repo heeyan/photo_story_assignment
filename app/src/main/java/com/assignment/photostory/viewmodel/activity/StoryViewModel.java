@@ -71,22 +71,22 @@ public class StoryViewModel {
     }
 
     public void cancelPhoto(){
-        story.cancelStory();
+        story.cancel();
     }
 
     public void storyDone(String title, String body){
         story.title = title;
         story.body = body;
         if(mode.equals(MODE.WRITE)){
-            story.writeStory();
+            story.save();
         }else if(mode.equals(MODE.EDIT)){
-            story.editStory();
+            story.edit();
         }
     }
 
     public void storyCancel(){
         if(mode.equals(MODE.WRITE)){
-            story.cancelStory();
+            story.cancel();
         }else if(mode.equals(MODE.EDIT)){
             // do nothing
         }

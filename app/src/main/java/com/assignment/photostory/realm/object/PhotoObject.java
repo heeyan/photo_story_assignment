@@ -1,5 +1,7 @@
 package com.assignment.photostory.realm.object;
 
+import com.assignment.photostory.model.Photo;
+
 import io.realm.RealmObject;
 
 /**
@@ -11,6 +13,11 @@ public class PhotoObject extends RealmObject {
     public String thumbUrl;
 
     public PhotoObject() {
+    }
+
+    public PhotoObject(Photo photo){
+        this.photoUrl = photo.origin.toString();
+        this.thumbUrl = photo.thumb.toString();
     }
 
     public PhotoObject(String photoUrl, String thumbUrl) {

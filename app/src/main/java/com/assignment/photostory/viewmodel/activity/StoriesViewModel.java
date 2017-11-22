@@ -43,7 +43,7 @@ public class StoriesViewModel {
     public void removeStory(long id){
         for(Story story : stories.stories){
             if(story.getId() == id){
-                story.removeStory();
+                story.remove();
                 stories.stories.remove(story);
                 break;
             }
