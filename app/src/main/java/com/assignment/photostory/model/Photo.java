@@ -27,7 +27,7 @@ public class Photo implements Parcelable{
     }
 
     //================================================================================
-    // action logic for story
+    // action logic for photo
     //================================================================================
     public void removePhoto() throws NullPointerException{
         origin.delete();

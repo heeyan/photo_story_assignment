@@ -113,6 +113,16 @@ public class Story implements Parcelable{
         });
     }
 
+    public void removeSync(){
+        if(id<=0){return;}
+
+        Realm realm = RealmHelper.getRealm();
+        realm.beginTransaction();
+        StoryObject storyObject = realm.where(StoryObject.class).equalTo("id", id).findFirst();
+        storyObject.deleteFromRealm();
+        realm.commitTransaction();
+    }
+
     public void cancel(){
         if(id>0){return;}
 

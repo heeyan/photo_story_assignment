@@ -11,10 +11,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.assignment.photostory.R;
+import com.assignment.photostory.helper.RedirectHelper;
 import com.assignment.photostory.model.Photo;
 import com.assignment.photostory.model.Story;
 import com.assignment.photostory.util.DateUtil;
-import com.assignment.photostory.viewmodel.activity.StoryViewModel;
+import com.assignment.photostory.viewmodel.activity.StoryActivityViewModel;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.util.Date;
@@ -25,14 +26,14 @@ import io.reactivex.functions.Consumer;
 public class StoryActivity extends BaseActivity {
 
     // viewmodel
-    StoryViewModel storyViewModel;
+    StoryActivityViewModel storyActivityViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // get story for writing or editing
-        Story story = (Story)getIntent().getParcelableExtra("story");
-        StoryViewModel.MODE mode = (StoryViewModel.MODE)getIntent().getSerializableExtra("mode");
+        Story story = RedirectHelper.parceStory(getIntent());
+        StoryActivityViewModel.MODE mode = RedirectHelper.parceStoryActivityMode(getIntent());
 
         if(story == null){
             finish();
@@ -40,7 +41,7 @@ public class StoryActivity extends BaseActivity {
         }
 
         // creating viewmodel
-        storyViewModel = new StoryViewModel(story, mode);
+        storyActivityViewModel = new StoryActivityViewModel(story, mode);
 
         findViews();
         setViews();
@@ -74,35 +75,35 @@ public class StoryActivity extends BaseActivity {
 
     // binding views with viewmodel through RxJava...
     private void setViews(){
-        compositeDisposable.add(storyViewModel.getModeObservable().subscribe(new Consumer<StoryViewModel.MODE>() {
+        compositeDisposable.add(storyActivityViewModel.getModeObservable().subscribe(new Consumer<StoryActivityViewModel.MODE>() {
             @Override
-            public void accept(StoryViewModel.MODE mode) throws Exception {
+            public void accept(StoryActivityViewModel.MODE mode) throws Exception {
                 setDoneButton(mode);
             }
         }));
 
-        compositeDisposable.add(storyViewModel.getPhotosObservable().subscribe(new Consumer<List<Photo>>() {
+        compositeDisposable.add(storyActivityViewModel.getPhotosObservable().subscribe(new Consumer<List<Photo>>() {
             @Override
             public void accept(List<Photo> photos) throws Exception {
                 setPhotoLinear(photos);
             }
         }));
 
-        compositeDisposable.add(storyViewModel.getUpdatedAtObservable().subscribe(new Consumer<Date>() {
+        compositeDisposable.add(storyActivityViewModel.getUpdatedAtObservable().subscribe(new Consumer<Date>() {
             @Override
             public void accept(Date updatedAt) throws Exception {
                 setUpdatedAt(updatedAt);
             }
         }));
 
-        compositeDisposable.add(storyViewModel.getTitleObservable().subscribe(new Consumer<String>() {
+        compositeDisposable.add(storyActivityViewModel.getTitleObservable().subscribe(new Consumer<String>() {
             @Override
             public void accept(String title) throws Exception {
                 setTitle(title);
             }
         }));
 
-        compositeDisposable.add(storyViewModel.getBodyObservable().subscribe(new Consumer<String>() {
+        compositeDisposable.add(storyActivityViewModel.getBodyObservable().subscribe(new Consumer<String>() {
             @Override
             public void accept(String body) throws Exception {
                 setBody(body);
@@ -128,10 +129,10 @@ public class StoryActivity extends BaseActivity {
     //================================================================================
     // binded view events...
     //================================================================================
-    private  void setDoneButton(StoryViewModel.MODE mode){
-        if(mode.equals(StoryViewModel.MODE.WRITE)){
+    private  void setDoneButton(StoryActivityViewModel.MODE mode){
+        if(mode.equals(StoryActivityViewModel.MODE.WRITE)){
             done.setText("저장");
-        }else if(mode.equals(StoryViewModel.MODE.EDIT)){
+        }else if(mode.equals(StoryActivityViewModel.MODE.EDIT)){
             done.setText("수정");
         }
     }
@@ -156,9 +157,9 @@ public class StoryActivity extends BaseActivity {
     }
 
     private void setUpdatedAt(Date updatedAt){
-        if(storyViewModel.mode.equals(StoryViewModel.MODE.WRITE)){
+        if(storyActivityViewModel.mode.equals(StoryActivityViewModel.MODE.WRITE)){
             this.updatedAt.setText(DateUtil.parceToDateTimeString(updatedAt));
-        }else if(storyViewModel.mode.equals(StoryViewModel.MODE.EDIT)){
+        }else if(storyActivityViewModel.mode.equals(StoryActivityViewModel.MODE.EDIT)){
             this.updatedAt.setText("마지막 수정 : " + DateUtil.parceToDateTimeString(updatedAt));
         }
     }
@@ -172,12 +173,12 @@ public class StoryActivity extends BaseActivity {
     }
 
     private void storyDone(){
-        storyViewModel.storyDone(title.getText().toString(), body.getText().toString());
+        storyActivityViewModel.storyDone(title.getText().toString(), body.getText().toString());
         finish();
     }
 
     private void storyCancel(){
-        storyViewModel.storyCancel();
+        storyActivityViewModel.storyCancel();
         finish();
     }
 

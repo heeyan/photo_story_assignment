@@ -1,6 +1,5 @@
 package com.assignment.photostory.activity;
 
-import android.content.Intent;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
@@ -10,8 +9,9 @@ import android.widget.Toast;
 
 import com.assignment.photostory.R;
 import com.assignment.photostory.helper.PhotoHelper;
+import com.assignment.photostory.helper.RedirectHelper;
 import com.assignment.photostory.model.Story;
-import com.assignment.photostory.viewmodel.activity.StoryViewModel;
+import com.assignment.photostory.viewmodel.activity.StoryActivityViewModel;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.io.File;
@@ -26,16 +26,15 @@ import io.reactivex.subjects.BehaviorSubject;
 public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.Callback {
 
     // viewmodel
-    StoryViewModel storyViewModel;
+    StoryActivityViewModel storyActivityViewModel;
 
     BehaviorSubject<byte[]> photoSubject = BehaviorSubject.create();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_story_camera);
 
-        storyViewModel = new StoryViewModel(new Story(), StoryViewModel.MODE.WRITE);
+        storyActivityViewModel = new StoryActivityViewModel(new Story(), StoryActivityViewModel.MODE.WRITE);
 
         findViews();
         setViews();
@@ -49,6 +48,8 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
     Button shotButton;
     Button doneButton;
     private void findViews(){
+        setContentView(R.layout.activity_story_camera);
+
         surfaceView = findViewById(R.id.surface_view);
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
@@ -101,11 +102,11 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
                         .subscribe(new Consumer<File>() {
                             @Override
                             public void accept(File file) throws Exception {
-                                storyViewModel.addPhoto(file);
+                                storyActivityViewModel.addPhoto(file);
                             }
                         }));
 
-        compositeDisposable.add(storyViewModel.getPhotoCountObservable().subscribe(new Consumer<Integer>() {
+        compositeDisposable.add(storyActivityViewModel.getPhotoCountObservable().subscribe(new Consumer<Integer>() {
             @Override
             public void accept(Integer count) throws Exception {
                 setDoneButton(count);
@@ -122,17 +123,15 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
     }
 
     private void goStory(){
-        if(storyViewModel.story.photos.isEmpty()){
+        if(storyActivityViewModel.story.photos.isEmpty()){
             Toast.makeText(this, "사진 촬영을 먼저 해주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Intent intent = new Intent(this, StoryActivity.class);
-        intent.putExtra("mode", storyViewModel.mode);
-        intent.putExtra("story", storyViewModel.story);
-        startActivity(intent);
+        RedirectHelper.goStory(this, storyActivityViewModel.story, storyActivityViewModel.mode);
         finish();
     }
+
 
     // <구현 선택 사항>
     // 사진 촬영 후 스토리 작성화면 이동시 List<File> 형태로 데이터를 건내주기 때문에
@@ -142,7 +141,7 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
     // List<Bitmap> 형태로 넘기면 이미지 파일 삭제 처리 이슈는 사라지지만
     // 메모리 사용에 있어서 비효율적일 수 있다.
     private void cancel(){
-        storyViewModel.cancelPhoto();
+        storyActivityViewModel.cancelPhoto();
         finish();
     }
 

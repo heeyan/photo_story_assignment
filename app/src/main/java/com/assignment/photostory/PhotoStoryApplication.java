@@ -1,6 +1,7 @@
 package com.assignment.photostory;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.assignment.photostory.helper.RealmHelper;
 
@@ -10,17 +11,18 @@ import com.assignment.photostory.helper.RealmHelper;
 
 public class PhotoStoryApplication extends Application {
 
-    public static PhotoStoryApplication instance;
-
+    private static Context context;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        instance = this;
+        context = getApplicationContext();
 
         RealmHelper.init(this);
     }
 
-
+    public static Context getContext() {
+        return context;
+    }
 }

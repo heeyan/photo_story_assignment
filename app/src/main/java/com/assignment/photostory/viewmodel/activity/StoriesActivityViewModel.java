@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.assignment.photostory.model.Stories;
 import com.assignment.photostory.model.Story;
+import com.assignment.photostory.viewmodel.ViewModel;
 
 import java.util.List;
 
@@ -15,13 +16,13 @@ import io.reactivex.subjects.Subject;
  * Created by heeyan on 2017. 11. 21..
  */
 
-public class StoriesViewModel {
+public class StoriesActivityViewModel extends ViewModel {
     @NonNull
     private final Stories stories;
 
     private Subject<List<Story>> storiesSubject = BehaviorSubject.create();
 
-    public StoriesViewModel(@NonNull Stories stories) {
+    public StoriesActivityViewModel(@NonNull Stories stories) {
         this.stories = stories;
         storiesSubject.onNext(this.stories.stories);
     }
@@ -37,17 +38,6 @@ public class StoriesViewModel {
 
     public void refreshStories(){
         stories.search(null);
-        storiesSubject.onNext(stories.stories);
-    }
-
-    public void removeStory(long id){
-        for(Story story : stories.stories){
-            if(story.getId() == id){
-                story.remove();
-                stories.stories.remove(story);
-                break;
-            }
-        }
         storiesSubject.onNext(stories.stories);
     }
 }

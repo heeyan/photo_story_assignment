@@ -17,7 +17,7 @@ import java.io.FileOutputStream;
 public class PhotoHelper {
     private static final String DIRECTORY = ".photostory";
     public static File savePhotoToFile(byte[] data, String fileName) {
-        File file = new File(PhotoStoryApplication.instance.getFilesDir(), fileName + ".jpeg");
+        File file = new File(PhotoStoryApplication.getContext().getFilesDir(), fileName + ".jpeg");
         try {
             FileOutputStream out = new FileOutputStream(file);
             rotateImage(BitmapFactory.decodeByteArray(data, 0 , data.length), 90)
@@ -31,7 +31,7 @@ public class PhotoHelper {
     }
 
     public static File saveThumbnail(File originalFile, String fileName) {
-        File file = new File(PhotoStoryApplication.instance.getFilesDir(), fileName + ".jpeg");
+        File file = new File(PhotoStoryApplication.getContext().getFilesDir(), fileName + ".jpeg");
         try {
             FileOutputStream out = new FileOutputStream(file);
             ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(originalFile.toString()), 256, 256)

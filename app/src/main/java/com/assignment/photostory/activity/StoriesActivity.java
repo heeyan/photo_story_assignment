@@ -2,9 +2,7 @@ package com.assignment.photostory.activity;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,22 +10,22 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.assignment.photostory.R;
+import com.assignment.photostory.adapter.recycler.RecyclerAdapter;
+import com.assignment.photostory.adapter.recycler.RecyclerModel;
+import com.assignment.photostory.helper.RedirectHelper;
 import com.assignment.photostory.model.Stories;
 import com.assignment.photostory.model.Story;
 import com.assignment.photostory.util.DateUtil;
-import com.assignment.photostory.viewmodel.activity.StoriesViewModel;
-import com.assignment.photostory.viewmodel.activity.StoryViewModel;
+import com.assignment.photostory.view.custom.StoryItemCustomView;
+import com.assignment.photostory.viewmodel.activity.StoriesActivityViewModel;
+import com.assignment.photostory.viewmodel.activity.StoryActivityViewModel;
+import com.assignment.photostory.viewmodel.view.StoryItemViewModel;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.util.ArrayList;
@@ -38,14 +36,14 @@ import io.reactivex.functions.Consumer;
 public class StoriesActivity extends BaseActivity {
 
     // viewmodel
-    StoriesViewModel storiesViewModel;
+    StoriesActivityViewModel storiesActivityViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestPermissions();
 
-        storiesViewModel = new StoriesViewModel(new Stories());
+        storiesActivityViewModel = new StoriesActivityViewModel(new Stories());
 
         findViews();
         setViews();
@@ -54,12 +52,11 @@ public class StoriesActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        storiesViewModel.refreshStories();
+        storiesActivityViewModel.refreshStories();
     }
 
     // views
     private FloatingActionButton fab;
-    private RecyclerView recyclerView;
     private EditText searchEdit;
     private Button searchButton;
     private void findViews(){
@@ -67,15 +64,28 @@ public class StoriesActivity extends BaseActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        fab = findViewById(R.id.fab);
+        initRecycler();
 
+        fab = findViewById(R.id.fab);
+        searchEdit = findViewById(R.id.search_edit);
+        searchButton = findViewById(R.id.search_button);
+    }
+
+    // init for recyclerview
+    private RecyclerView recyclerView;
+    private RecyclerAdapter recyclerAdapter;
+    private List<RecyclerModel> recyclerModels;
+    private void initRecycler(){
         recyclerView = findViewById(R.id.recycler_view);
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-        searchEdit = findViewById(R.id.search_edit);
-        searchButton = findViewById(R.id.search_button);
+        recyclerModels = new ArrayList<>();
+        recyclerAdapter = new RecyclerAdapter(recyclerModels);
+
+        recyclerView.setAdapter(recyclerAdapter);
     }
 
     // binding views with viewmodel through RxJava...
@@ -94,57 +104,62 @@ public class StoriesActivity extends BaseActivity {
             }
         }));
 
-        compositeDisposable.add(storiesViewModel.getStoriesObservable().subscribe(new Consumer<List<Story>>() {
+        compositeDisposable.add(storiesActivityViewModel.getStoriesObservable().subscribe(new Consumer<List<Story>>() {
             @Override
             public void accept(List<Story> stories) throws Exception {
-                setRecyclerAdapter(stories);
+                updateRecycler(stories);
             }
         }));
     }
-
-
-
-
-
-
-
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_stories, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
-
 
     //================================================================================
     // binded view events...
     //================================================================================
     private void goStoryCamera(){
-        startActivity(new Intent(this, StoryCameraActivity.class));
+        RedirectHelper.goStoryCamera(this);
     }
 
-    private void setRecyclerAdapter(List<Story> stories){
-        recyclerView.setAdapter(new RecyclerAdapter(stories));
+    private void updateRecycler(List<Story> stories){
+        recyclerModels.clear();
+        List<RecyclerModel> monthStoryModels = new ArrayList<>();
+        String prevDateMonth = "";
+        for(Story story : stories){
+            String newDateMonth = DateUtil.parceToMonthString(story.updatedAt);
+            if(!prevDateMonth.equals(newDateMonth)){
+                if(!monthStoryModels.isEmpty()){
+                    ((StoryItemViewModel)monthStoryModels.get(0).getViewModel()).dateMonth = prevDateMonth + " (" + monthStoryModels.size() + ")";
+                }
+                recyclerModels.addAll(monthStoryModels);
+                monthStoryModels.clear();
+            }
+
+            final StoryItemViewModel storyItemViewModel = new StoryItemViewModel(story);
+            compositeDisposable.add(storyItemViewModel.getEventObservable().subscribe(new Consumer<StoryItemViewModel.EVENT>() {
+                @Override
+                public void accept(StoryItemViewModel.EVENT event) throws Exception {
+                    if(event.equals(StoryItemViewModel.EVENT.CLICK)){
+                        goStory(storyItemViewModel.story);
+                    }else if(event.equals(StoryItemViewModel.EVENT.LONG_CLICK)){
+                        storiesActivityViewModel.refreshStories();
+                    }
+                }
+            }));
+            monthStoryModels.add(new RecyclerModel(StoryItemCustomView.class, storyItemViewModel));
+            prevDateMonth = newDateMonth;
+        }
+        if(!monthStoryModels.isEmpty()){
+            ((StoryItemViewModel)monthStoryModels.get(0).getViewModel()).dateMonth = prevDateMonth + " (" + monthStoryModels.size() + ")";
+        }
+        recyclerModels.addAll(monthStoryModels);
+        recyclerAdapter.update();
+    }
+
+    private void goStory(Story story){
+        RedirectHelper.goStory(this, story, StoryActivityViewModel.MODE.EDIT);
     }
 
     private void search(String query){
-        storiesViewModel.search(query);
+        storiesActivityViewModel.search(query);
         hideKeyboard();
     }
 
@@ -155,9 +170,6 @@ public class StoriesActivity extends BaseActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
-
-
-
 
 
     //================================================================================
@@ -201,135 +213,5 @@ public class StoriesActivity extends BaseActivity {
                 break;
         }
     }
-
-
-
-    //================================================================================
-    // Adapter for recycler :: 임시 구현
-    //================================================================================
-    class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder>{
-        final int TYPE_DATE_MONTH = 1;
-        final int TYPE_STORY = 2;
-
-        List<Item> items = new ArrayList<>();
-
-        public RecyclerAdapter(List<Story> stories) {
-            String dateMonth = "";
-            Item lastDateMonthItem = null;
-            int storyCount = 0;
-            for(Story story : stories){
-                String newDateMonth = DateUtil.parceToMonthString(story.updatedAt);
-                if(!dateMonth.equals(newDateMonth)){
-                    if(lastDateMonthItem != null){
-                        lastDateMonthItem.dateMonth = lastDateMonthItem.dateMonth + " ("+storyCount+")";
-                    }
-                    dateMonth = newDateMonth;
-                    lastDateMonthItem = new Item(dateMonth);
-                    storyCount = 0;
-                    items.add(lastDateMonthItem);
-                }
-                storyCount++;
-                items.add(new Item(story));
-            }
-            if(lastDateMonthItem != null){
-                lastDateMonthItem.dateMonth = lastDateMonthItem.dateMonth + " ("+storyCount+")";
-            }
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if(viewType==TYPE_DATE_MONTH){
-                TextView dateMonth = new TextView(parent.getContext());
-                int padding = (int)getResources().getDisplayMetrics().density * 4;
-                dateMonth.setPadding(padding, padding, padding, padding);
-                return new ViewHolder(dateMonth, viewType);
-            }else{
-                View v = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_story_recycler, parent, false);
-                return new ViewHolder(v, viewType);
-            }
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, final int position) {
-            if(items.get(position).viewType==TYPE_DATE_MONTH){
-                holder.dateMonth.setText(items.get(position).dateMonth);
-            }else{
-                final Story story = items.get(position).story;
-                holder.storyPhoto.setImageBitmap(BitmapFactory.decodeFile(story.photos.get(0).thumb.toString()));
-                holder.title.setText(story.title);
-                holder.updateDate.setText(DateUtil.parceToDateTimeString(story.updatedAt));
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        goStory(new Story(story.getId()));
-                    }
-                });
-                holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View view) {
-                        storiesViewModel.removeStory(story.getId());
-                        Toast.makeText(getApplicationContext(), "story removed", Toast.LENGTH_SHORT).show();
-                        return true;
-                    }
-                });
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return items.size();
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return items.get(position).viewType;
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder{
-            TextView dateMonth;
-            ImageView storyPhoto;
-            TextView title;
-            TextView updateDate;
-            View itemView;
-
-            public ViewHolder(View itemView, int viewType) {
-                super(itemView);
-                if(viewType==TYPE_DATE_MONTH){
-                    dateMonth = (TextView) itemView;
-                }else{
-                    this.itemView = itemView;
-                    storyPhoto = itemView.findViewById(R.id.story_photo);
-                    title = itemView.findViewById(R.id.title);
-                    updateDate = itemView.findViewById(R.id.updated_at);
-                }
-            }
-        }
-
-        class Item{
-            int viewType;
-            Story story;
-            String dateMonth;
-
-            public Item(String dateMonth) {
-                this.dateMonth = dateMonth;
-                this.viewType = TYPE_DATE_MONTH;
-            }
-
-            public Item(Story story) {
-                this.story = story;
-                this.viewType = TYPE_STORY;
-            }
-        }
-    }
-
-    private void goStory(Story story){
-        Intent intent = new Intent(this, StoryActivity.class);
-        intent.putExtra("mode", StoryViewModel.MODE.EDIT);
-        intent.putExtra("story", story);
-        startActivity(intent);
-    }
-
-
 
 }
