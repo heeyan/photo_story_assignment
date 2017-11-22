@@ -1,5 +1,7 @@
 package com.assignment.photostory.realm.object;
 
+import java.util.Date;
+
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -11,6 +13,7 @@ import io.realm.annotations.PrimaryKey;
 public class StoryObject extends RealmObject {
     @PrimaryKey
     public long id;
+    public Date updatedAt;
     public String title;
     public String body;
     public RealmList<PhotoObject> photos;

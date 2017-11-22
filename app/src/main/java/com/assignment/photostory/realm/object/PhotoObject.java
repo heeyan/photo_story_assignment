@@ -7,6 +7,14 @@ import io.realm.RealmObject;
  */
 
 public class PhotoObject extends RealmObject {
-    private String photoUrl;
-    private String thumbUrl;
+    public String photoUrl;
+    public String thumbUrl;
+
+    public PhotoObject() {
+    }
+
+    public PhotoObject(String photoUrl, String thumbUrl) {
+        this.photoUrl = photoUrl;
+        this.thumbUrl = thumbUrl;
+    }
 }

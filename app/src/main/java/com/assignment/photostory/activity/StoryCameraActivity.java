@@ -9,12 +9,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.assignment.photostory.R;
-import com.assignment.photostory.util.BitmapUtil;
+import com.assignment.photostory.helper.PhotoHelper;
+import com.assignment.photostory.model.Story;
+import com.assignment.photostory.viewmodel.activity.StoryViewModel;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
@@ -24,23 +25,30 @@ import io.reactivex.subjects.BehaviorSubject;
 
 public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.Callback {
 
-    Camera camera;
-    SurfaceView surfaceView;
-    SurfaceHolder surfaceHolder;
-    Camera.PictureCallback jpegCallback;
-
-    Button closeButton;
-    Button shotButton;
-    Button doneButton;
+    // viewmodel
+    StoryViewModel storyViewModel;
 
     BehaviorSubject<byte[]> photoSubject = BehaviorSubject.create();
-    ArrayList<File> sendingPhotos = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_camera);
 
+        storyViewModel = new StoryViewModel(new Story(), StoryViewModel.MODE.WRITE);
+
+        findViews();
+        setViews();
+    }
+
+
+    // views
+    SurfaceView surfaceView;
+    SurfaceHolder surfaceHolder;
+    Button closeButton;
+    Button shotButton;
+    Button doneButton;
+    private void findViews(){
         surfaceView = findViewById(R.id.surface_view);
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
@@ -49,7 +57,11 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
         closeButton = findViewById(R.id.close);
         shotButton = findViewById(R.id.shot);
         doneButton = findViewById(R.id.done);
+    }
 
+
+    // binding views with viewmodel through RxJava...
+    private void setViews(){
         compositeDisposable.add(
                 RxView.clicks(closeButton)
                         .subscribe(new Consumer<Object>() {
@@ -61,19 +73,19 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
 
         compositeDisposable.add(
                 RxView.clicks(shotButton)
-                    .subscribe(new Consumer<Object>() {
-                        @Override
-                        public void accept(Object o) throws Exception {
-                            captureImage();
-                        }
-                    }));
+                        .subscribe(new Consumer<Object>() {
+                            @Override
+                            public void accept(Object o) throws Exception {
+                                captureImage();
+                            }
+                        }));
 
         compositeDisposable.add(
                 RxView.clicks(doneButton)
                         .subscribe(new Consumer<Object>() {
                             @Override
                             public void accept(Object o) throws Exception {
-                                goStoryWrite();
+                                goStory();
                             }
                         }));
 
@@ -82,61 +94,70 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
                         .map(new Function<byte[], File>() {
                             @Override
                             public File apply(byte[] bytes) throws Exception {
-                                return BitmapUtil.savePhotoToFile(bytes, String.format("ps_%d", System.currentTimeMillis()));
+                                return PhotoHelper.savePhotoToFile(bytes, String.format("ps_%d", System.currentTimeMillis()));
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Consumer<File>() {
                             @Override
                             public void accept(File file) throws Exception {
-                                sendingPhotos.add(file);
-                                doneButton.setText(String.format("완료(%d)", sendingPhotos.size()));
+                                storyViewModel.addPhoto(file);
                             }
                         }));
+
+        compositeDisposable.add(storyViewModel.getPhotoCountObservable().subscribe(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer count) throws Exception {
+                setDoneButton(count);
+            }
+        }));
     }
 
-    public void captureImage() throws IOException {
-        if(jpegCallback == null){
-            jpegCallback = new Camera.PictureCallback() {
-                public void onPictureTaken(byte[] data, Camera camera) {
-                    photoSubject.onNext(data);
-                }
-            };
-        }
-        camera.takePicture(null, null, jpegCallback);
+
+    //================================================================================
+    // binded view events...
+    //================================================================================
+    private void setDoneButton(Integer count){
+        doneButton.setText(String.format("완료(%d)", count));
     }
 
-    private void goStoryWrite(){
-        if(sendingPhotos.isEmpty()){
+    private void goStory(){
+        if(storyViewModel.story.photos.isEmpty()){
             Toast.makeText(this, "사진 촬영을 먼저 해주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         Intent intent = new Intent(this, StoryActivity.class);
-//        Bundle bundle = new Bundle();
-//        bundle.putSerializable("sending_photos", sendingPhotos);
-//        intent.putExtras(bundle);
-        intent.putExtra("mode", "write");
-        intent.putExtra("sending_photos", sendingPhotos);
+        intent.putExtra("mode", storyViewModel.mode);
+        intent.putExtra("story", storyViewModel.story);
         startActivity(intent);
         finish();
     }
 
+    // <구현 선택 사항>
+    // 사진 촬영 후 스토리 작성화면 이동시 List<File> 형태로 데이터를 건내주기 때문에
+    // 현재 단계에서 액션이 취소 될 시에 파일로 저장해둔 이미지를 삭제 해야 한다.
+    // 이미지를 파일로 저장해서 넘기도록 할 경우 앱 동작 상태에 따라
+    // 최종적으로 스토리가 되지않는 이미지 파일들은 삭제 해주어야 한다.
+    // List<Bitmap> 형태로 넘기면 이미지 파일 삭제 처리 이슈는 사라지지만
+    // 메모리 사용에 있어서 비효율적일 수 있다.
     private void cancel(){
-        for(File file : sendingPhotos){
-            file.delete();
-        }
-
+        storyViewModel.cancelPhoto();
         finish();
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         cancel();
     }
 
-    private void refreshCamera() {
+
+
+    //================================================================================
+    // for camera and surfaceholder callback
+    //================================================================================
+    Camera camera;
+    public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
         if (surfaceHolder.getSurface() == null) {
             return;
         }
@@ -149,10 +170,6 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
             camera.setPreviewDisplay(surfaceHolder);
             camera.startPreview();
         } catch (Exception e) {}
-    }
-
-    public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
-        refreshCamera();
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -175,6 +192,18 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
             camera.release();
             camera = null;
         }
+    }
+
+    Camera.PictureCallback jpegCallback;
+    public void captureImage() throws IOException {
+        if(jpegCallback == null){
+            jpegCallback = new Camera.PictureCallback() {
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    photoSubject.onNext(data);
+                }
+            };
+        }
+        camera.takePicture(null, null, jpegCallback);
     }
 }
 

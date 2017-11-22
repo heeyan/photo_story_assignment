@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.assignment.photostory.activity.StoryActivity"
+    tools:showIn="@layout/activity_story">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/photo_count"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:padding="4dp"
+                android:gravity="center_vertical"
+                android:text="0장의 사진"/>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="120dp">
+
+                <LinearLayout
+                    android:id="@+id/photo_linear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"/>
+
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/updated_at"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp"/>
+
+            <EditText
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:padding="4dp"
+                android:background="@null"
+                android:hint="제목을 입력해주세요"
+                android:gravity="center_vertical"
+                android:textSize="26dp"
+                android:lines="1"/>
+
+            <EditText
+                android:id="@+id/body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="4dp"
+                android:background="@null"
+                android:hint="메모를 입력해주세요"
+                android:textSize="20dp"
+                android:gravity="top"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/done"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="done"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/photo_detail_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#88000000"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/photo_detail"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:scaleType="centerInside"/>
+
+        <Button
+            android:id="@+id/close_photo_detail"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="닫기"/>
+
+    </LinearLayout>
+
+
+</FrameLayout>

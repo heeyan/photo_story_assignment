@@ -1,4 +1,4 @@
-package com.assignment.photostory.util;
+package com.assignment.photostory.helper;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,14 +13,14 @@ import java.io.FileOutputStream;
  * Created by heeyan on 2017. 11. 20..
  */
 
-public class BitmapUtil {
+public class PhotoHelper {
     private static final String DIRECTORY = "!photostory";
     public static File savePhotoToFile(byte[] data, String fileName) {
         File file = makePhotoFile(fileName);
 
         try {
             FileOutputStream out = new FileOutputStream(file);
-            BitmapUtil.rotateImage(BitmapFactory.decodeByteArray(data, 0 , data.length), 90)
+            rotateImage(BitmapFactory.decodeByteArray(data, 0 , data.length), 90)
                     .compress(Bitmap.CompressFormat.JPEG, 60, out);
             out.flush();
             out.close();
@@ -36,7 +36,7 @@ public class BitmapUtil {
 
         try {
             FileOutputStream out = new FileOutputStream(file);
-            ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(originalFile.toString()), 128, 128)
+            ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(originalFile.toString()), 256, 256)
                     .compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.flush();
             out.close();
