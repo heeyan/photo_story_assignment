@@ -23,11 +23,15 @@ import io.realm.Sort;
 
 public class Story implements Parcelable{
     private long id;
-    public Date updatedAt;
-    public String title;
-    public String body;
-    public List<Photo> photos;
+    private Date updatedAt;
+    private String title;
+    private String body;
+    private List<Photo> photos;
 
+
+    //================================================================================
+    // constructors......
+    //================================================================================
     //for new story
     public Story() {
         id = -1;
@@ -50,9 +54,47 @@ public class Story implements Parcelable{
         }
     }
 
+
+
+    //================================================================================
+    // getters, setters
+    //================================================================================
     public long getId() {
         return id;
     }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public List<Photo> getPhotos() {
+        return photos;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public void setPhotos(List<Photo> photos) {
+        this.photos = photos;
+    }
+
 
 
     //================================================================================
@@ -131,6 +173,8 @@ public class Story implements Parcelable{
         }
 
     }
+
+
 
     //================================================================================
     // parcelable implement

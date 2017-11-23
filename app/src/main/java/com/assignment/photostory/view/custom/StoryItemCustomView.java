@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.assignment.photostory.R;
 import com.assignment.photostory.util.DateUtil;
 import com.assignment.photostory.viewmodel.ViewModel;
-import com.assignment.photostory.viewmodel.view.StoryItemViewModel;
+import com.assignment.photostory.viewmodel.customview.StoryItemViewModel;
 
 /**
  * Created by heeyan on 2017. 11. 23..
@@ -50,9 +50,9 @@ public class StoryItemCustomView extends CustomViewMatchParentWidth {
         }else{
             dateMonth.setVisibility(GONE);
         }
-        storyPhoto.setImageBitmap(BitmapFactory.decodeFile(storyItemViewModel.story.photos.get(0).thumb.toString()));
-        title.setText(storyItemViewModel.story.title);
-        updateDate.setText(DateUtil.parceToDateTimeString(storyItemViewModel.story.updatedAt));
+        storyPhoto.setImageBitmap(BitmapFactory.decodeFile(storyItemViewModel.getThumbsPath()));
+        title.setText(storyItemViewModel.getTitle());
+        updateDate.setText(DateUtil.parceToDateTimeString(storyItemViewModel.getUpdatedAt()));
 
         clickArea.setOnClickListener(new OnClickListener() {
             @Override

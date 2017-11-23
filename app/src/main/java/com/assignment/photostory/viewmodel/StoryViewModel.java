@@ -17,25 +17,54 @@ import io.reactivex.Observable;
 public class StoryViewModel extends ViewModel {
 
     @NonNull
-    public final Story story;
+    protected final Story story;
 
     public StoryViewModel(@NonNull Story story) {
         this.story = story;
     }
 
     public Observable<Date> getUpdatedAtObservable(){
-        return Observable.just(story.updatedAt);
+        return Observable.just(story.getUpdatedAt());
     }
 
     public Observable<String> getTitleObservable(){
-        return Observable.just(story.title);
+        return Observable.just(story.getTitle());
     }
 
     public Observable<String> getBodyObservable(){
-        return Observable.just(story.body);
+        return Observable.just(story.getBody());
     }
 
     public Observable<List<Photo>> getPhotosObservable(){
-        return Observable.just(story.photos);
+        return Observable.just(story.getPhotos());
+    }
+
+    @NonNull
+    public Story getStory() {
+        return story;
+    }
+
+    public String getThumbsPath(){
+        if(story.getPhotos().isEmpty()){
+            return "";
+        }else{
+            return story.getPhotos().get(0).thumb.toString();
+        }
+    }
+
+    public Date getUpdatedAt(){
+        return story.getUpdatedAt();
+    }
+
+    public String getTitle(){
+        return story.getTitle();
+    }
+
+    public String getBody(){
+        return story.getBody();
+    }
+
+    public List<Photo> getPhotos(){
+        return story.getPhotos();
     }
 }

@@ -1,4 +1,4 @@
-package com.assignment.photostory.viewmodel.view;
+package com.assignment.photostory.viewmodel.customview;
 
 import android.support.annotation.NonNull;
 import android.widget.Toast;

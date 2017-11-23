@@ -48,7 +48,7 @@ public class StoryActivityViewModel extends StoryViewModel {
 
     public void addPhoto(File photo){
         story.addPhoto(photo);
-        photosSubject.onNext(story.photos);
+        photosSubject.onNext(story.getPhotos());
     }
 
     public void cancelPhoto(){
@@ -56,8 +56,8 @@ public class StoryActivityViewModel extends StoryViewModel {
     }
 
     public void storyDone(String title, String body){
-        story.title = title;
-        story.body = body;
+        story.setTitle(title);
+        story.setBody(body);
         if(mode.equals(MODE.WRITE)){
             story.save();
         }else if(mode.equals(MODE.EDIT)){
@@ -71,5 +71,9 @@ public class StoryActivityViewModel extends StoryViewModel {
         }else if(mode.equals(MODE.EDIT)){
             // do nothing
         }
+    }
+
+    public boolean isPhotsEmpty(){
+        return story.getPhotos().isEmpty();
     }
 }

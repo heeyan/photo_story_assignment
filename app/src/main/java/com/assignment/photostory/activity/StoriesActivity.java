@@ -25,7 +25,7 @@ import com.assignment.photostory.util.DateUtil;
 import com.assignment.photostory.view.custom.StoryItemCustomView;
 import com.assignment.photostory.viewmodel.activity.StoriesActivityViewModel;
 import com.assignment.photostory.viewmodel.activity.StoryActivityViewModel;
-import com.assignment.photostory.viewmodel.view.StoryItemViewModel;
+import com.assignment.photostory.viewmodel.customview.StoryItemViewModel;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.util.ArrayList;
@@ -124,7 +124,7 @@ public class StoriesActivity extends BaseActivity {
         List<RecyclerModel> monthStoryModels = new ArrayList<>();
         String prevDateMonth = "";
         for(Story story : stories){
-            String newDateMonth = DateUtil.parceToMonthString(story.updatedAt);
+            String newDateMonth = DateUtil.parceToMonthString(story.getUpdatedAt());
             if(!prevDateMonth.equals(newDateMonth)){
                 if(!monthStoryModels.isEmpty()){
                     ((StoryItemViewModel)monthStoryModels.get(0).getViewModel()).dateMonth = prevDateMonth + " (" + monthStoryModels.size() + ")";
@@ -138,7 +138,7 @@ public class StoriesActivity extends BaseActivity {
                 @Override
                 public void accept(StoryItemViewModel.EVENT event) throws Exception {
                     if(event.equals(StoryItemViewModel.EVENT.CLICK)){
-                        goStory(storyItemViewModel.story);
+                        goStory(storyItemViewModel.getStory());
                     }else if(event.equals(StoryItemViewModel.EVENT.LONG_CLICK)){
                         storiesActivityViewModel.refreshStories();
                     }

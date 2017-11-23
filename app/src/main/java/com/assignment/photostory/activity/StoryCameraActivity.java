@@ -123,12 +123,12 @@ public class StoryCameraActivity extends BaseActivity implements SurfaceHolder.C
     }
 
     private void goStory(){
-        if(storyActivityViewModel.story.photos.isEmpty()){
+        if(storyActivityViewModel.isPhotsEmpty()){
             Toast.makeText(this, "사진 촬영을 먼저 해주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        RedirectHelper.goStory(this, storyActivityViewModel.story, storyActivityViewModel.mode);
+        RedirectHelper.goStory(this, storyActivityViewModel.getStory(), storyActivityViewModel.mode);
         finish();
     }
 
