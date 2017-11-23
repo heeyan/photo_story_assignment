@@ -19,6 +19,9 @@ import io.realm.Sort;
 
 /**
  * Created by heeyan on 2017. 11. 21..
+ *
+ * 고려사항 : Realm에 데이터 입출력을 Model이 아닌 RealmObject에 구현 후
+ * Model에서는 해당 함수 호출하는 방식으로 수정할 것
  */
 
 public class Story implements Parcelable{
