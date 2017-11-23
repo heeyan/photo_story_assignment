@@ -50,6 +50,10 @@ public class StoryActivityViewModelTest {
 
         TestObserver<Integer> photoCountObserver = new TestObserver<>();
         storyActivityViewModel.getPhotoCountObservable().subscribe(photoCountObserver);
+
+        photoCountObserver.assertNoErrors();
+        photoCountObserver.assertEmpty();
+
         storyActivityViewModel.addPhoto(null);
 
         photoCountObserver.assertNoErrors();
