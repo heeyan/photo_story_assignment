@@ -1,5 +1,6 @@
 package com.assignment.photostory.viewmodel;
 
+import com.assignment.photostory.model.Photo;
 import com.assignment.photostory.model.Story;
 
 import org.junit.Before;
@@ -8,8 +9,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import io.reactivex.observers.TestObserver;
 
@@ -53,6 +57,26 @@ public class StoryViewModelTest {
         titleObserver.assertNoErrors();
         titleObserver.assertValue(title);
 
-        //위와 같은 패턴으로 observable getter들을 테스트..
+        //getBodyObservable
+        String body = "body";
+        Mockito.when(story.getBody()).thenReturn(body);
+
+        TestObserver<String> bodyObserver = new TestObserver<>();
+        storyViewModel.getBodyObservable().subscribe(bodyObserver);
+
+        bodyObserver.assertNoErrors();
+        bodyObserver.assertValue(body);
+
+        //getPhotosObservable
+        List<Photo> photos = Arrays.asList(
+                new Photo(new File("origin1.jpeg"), new File("thumb1.jpeg")),
+                new Photo(new File("origin2.jpeg"), new File("thumb2.jpeg")));
+        Mockito.when(story.getPhotos()).thenReturn(photos);
+
+        TestObserver<List<Photo>> photosObserver = new TestObserver<>();
+        storyViewModel.getPhotosObservable().subscribe(photosObserver);
+
+        photosObserver.assertNoErrors();
+        photosObserver.assertValue(photos);
     }
 }
