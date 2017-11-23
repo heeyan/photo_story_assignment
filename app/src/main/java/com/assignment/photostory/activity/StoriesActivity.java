@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.assignment.photostory.R;
 import com.assignment.photostory.adapter.recycler.RecyclerAdapter;
@@ -140,6 +141,7 @@ public class StoriesActivity extends BaseActivity {
                     if(event.equals(StoryItemViewModel.EVENT.CLICK)){
                         goStory(storyItemViewModel.getStory());
                     }else if(event.equals(StoryItemViewModel.EVENT.LONG_CLICK)){
+                        Toast.makeText(getApplicationContext(), "Story removed...", Toast.LENGTH_SHORT).show();
                         storiesActivityViewModel.refreshStories();
                     }
                 }

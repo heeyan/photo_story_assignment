@@ -1,9 +1,7 @@
 package com.assignment.photostory.viewmodel.customview;
 
 import android.support.annotation.NonNull;
-import android.widget.Toast;
 
-import com.assignment.photostory.PhotoStoryApplication;
 import com.assignment.photostory.model.Story;
 import com.assignment.photostory.viewmodel.StoryViewModel;
 
@@ -37,8 +35,11 @@ public class StoryItemViewModel extends StoryViewModel {
     }
 
     public void itemLongClicked(){
-        story.removeSync();
-        Toast.makeText(PhotoStoryApplication.getContext(), "Story removed...", Toast.LENGTH_SHORT).show();
+        removeStorySync();
         eventSubject.onNext(EVENT.LONG_CLICK);
+    }
+
+    private void removeStorySync(){
+        story.removeSync();
     }
 }
